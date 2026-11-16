@@ -5,10 +5,21 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Buat rilis dengan versi ini, mis. 1.0.0 (kosongkan untuk build biasa)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-${{ inputs.version || github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -31,9 +42,22 @@ jobs:
       - name: Tentukan versi
         id: ver
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF#refs/tags/v}"; else v="1.0.0"; fi
+          release=false
+          if [[ -n "$INPUT_VERSION" ]]; then
+            v="${INPUT_VERSION#v}"; release=true
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            v="${GITHUB_REF#refs/tags/v}"; release=true
+          else
+            v="1.0.0"
+          fi
+          if ! [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Versi '$v' tidak valid. Gunakan format 1.2.3"; exit 1
+          fi
           echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
 
       - name: Publish win-x64
         run: >
@@ -42,7 +66,9 @@ jobs:
           -p:Version=${{ steps.ver.outputs.version }} -o publish/NusaTrainer
 
       - name: Publish DemoGame (untuk mencoba trainer)
-        run: dotnet publish tools/DemoGame -c Release -r win-x64 --self-contained false -o publish/NusaTrainer/DemoGame
+        run: >
+          dotnet publish tools/DemoGame -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:PublishTrimmed=true -o publish/NusaTrainer/DemoGame
 
       - name: Zip
         id: zip
@@ -60,25 +86,39 @@ jobs:
           name: NusaTrainer-win-x64
           path: ${{ steps.zip.outputs.name }}
 
-      - name: Buat GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Buat / perbarui GitHub Release
+        if: steps.ver.outputs.release == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.ver.outputs.version }}
+          ZIP: ${{ steps.zip.outputs.name }}
+          SHA256: ${{ steps.zip.outputs.sha256 }}
         run: |
-          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${{ steps.zip.outputs.name }}"
+          tag="v${VERSION}"
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${ZIP}"
           cat > release-notes.md <<NOTES
-          SHA-256: \`${{ steps.zip.outputs.sha256 }}\`
+          ## Unduh
+          **${ZIP}** — ekstrak, lalu jalankan \`NusaTrainer.exe\` (meminta hak Administrator).
+          Untuk mencoba tanpa game sungguhan, jalankan \`DemoGame\\DemoGame.exe\`.
 
-          Agar aplikasi yang sudah terpasang menawarkan pembaruan otomatis, salin ini ke \`database/app-release.json\` lalu push ke main:
+          SHA-256: \`${SHA256}\`
+
+          ## Untuk pengelola
+          Agar aplikasi yang sudah terpasang menawarkan pembaruan otomatis ke versi ini, salin ke \`database/app-release.json\` lalu push ke main:
 
           \`\`\`json
           {
-            "version": "${{ steps.ver.outputs.version }}",
+            "version": "${VERSION}",
             "downloadUrl": "${url}",
-            "sha256": "${{ steps.zip.outputs.sha256 }}",
+            "sha256": "${SHA256}",
             "notes": "Ringkasan perubahan di sini."
           }
           \`\`\`
           NOTES
-          gh release create "$GITHUB_REF_NAME" "${{ steps.zip.outputs.name }}" --title "NusaTrainer ${{ steps.ver.outputs.version }}" --notes-file release-notes.md
+          cat release-notes.md >> "$GITHUB_STEP_SUMMARY"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$ZIP" --clobber
+          else
+            gh release create "$tag" "$ZIP" --target "$GITHUB_SHA" --title "NusaTrainer ${VERSION}" --notes-file release-notes.md
+          fi

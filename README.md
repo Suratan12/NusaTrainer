@@ -43,7 +43,7 @@ NusaTrainer **tidak** memakai atau menyalin database/trainer WeMod (konten berba
 
 ## Mulai cepat (Windows)
 
-1. Unduh `NusaTrainer-x.y.z-win-x64.zip` dari halaman **Releases**, ekstrak, jalankan `NusaTrainer.exe` (akan meminta hak Administrator — dibutuhkan untuk membaca/menulis memori game).
+1. Unduh `NusaTrainer-x.y.z-win-x64.zip` dari halaman [**Releases**](https://github.com/Suratan12/NusaTrainer/releases), ekstrak, jalankan `NusaTrainer.exe` (akan meminta hak Administrator — dibutuhkan untuk membaca/menulis memori game).
 2. Coba dengan game uji coba yang ikut di zip: jalankan `DemoGame\DemoGame.exe`.
 3. NusaTrainer otomatis terhubung ke **Demo Game (Uji Coba)** — nyalakan *Nyawa Tak Terbatas* (atau tekan **Numpad 1**) dan lihat nyawa di jendela DemoGame terkunci di 100.
 
@@ -86,7 +86,7 @@ Database di-host gratis di **GitHub Pages** dan ditandatangani otomatis oleh Git
 
 Setelah itu, alurnya: **edit/tambah file di `database/games/` → push ke `main` → workflow *Publish Database* menandatangani & mempublikasikan → semua aplikasi mengambilnya otomatis.**
 
-Rilis aplikasi baru: buat tag `v1.1.0` → workflow *Build & Release* membuat GitHub Release; salin cuplikan `app-release.json` dari catatan rilis ke `database/app-release.json` lalu push — pengguna akan melihat banner pembaruan.
+Rilis aplikasi baru: tab **Actions → Build & Release → Run workflow**, isi versi (mis. `1.1.0`) → workflow membuat tag + GitHub Release berisi zip-nya. (Bisa juga lewat halaman Releases → *Draft a new release* dengan tag `v1.1.0`.) Lalu salin cuplikan `app-release.json` dari catatan rilis ke `database/app-release.json` dan push — pengguna akan melihat banner pembaruan.
 
 Panduan lengkap menulis cheat & mod (termasuk cara mencari alamat dengan Cheat Engine): **[docs/DATABASE.md](docs/DATABASE.md)**.
 
