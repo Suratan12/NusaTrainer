@@ -6,9 +6,12 @@
 //                    [--out <folder>] [--app-version X --app-url URL --app-sha256 H --app-notes TXT]
 //                    (atau tulis info rilis aplikasi di <db>/app-release.json)
 //   nusa-db hash     <file>                               Cetak SHA-256 sebuah file (untuk mod .zip)
+//   nusa-db import-ct --ct <tabel.CT> --db <folder> --id <id> --name "Nama Game" --process <Game.exe>
+//                    [--steam <appid>] [--author <nama>]   Buat/perbarui games/<id>.json dari tabel Cheat Engine
 //
 // Kunci privat juga bisa diberikan lewat env NUSA_DB_PRIVATE_KEY (isi PEM) — dipakai di GitHub Actions.
 
+using NusaTrainer.Core.CheatTables;
 using NusaTrainer.Core.Database;
 using NusaTrainer.Core.Models;
 using NusaTrainer.Core.Util;
@@ -27,7 +30,7 @@ static int Fail(string msg)
 
 if (args.Length == 0)
 {
-    Console.WriteLine("Perintah: keygen | validate | build | hash  (lihat komentar di Program.cs / docs/DATABASE.md)");
+    Console.WriteLine("Perintah: keygen | validate | build | hash | import-ct  (lihat komentar di Program.cs / docs/DATABASE.md)");
     return 1;
 }
 
@@ -54,6 +57,42 @@ switch (args[0])
     {
         if (args.Length < 2) return Fail("Pakai: nusa-db hash <file>");
         Console.WriteLine(await Hashing.Sha256HexAsync(args[1]));
+        return 0;
+    }
+
+    case "import-ct":
+    {
+        var ctPath = Opt(args, "--ct") ?? throw new ArgumentException("--ct wajib");
+        var db = Opt(args, "--db") ?? "database";
+        var id = Opt(args, "--id") ?? throw new ArgumentException("--id wajib");
+        var target = Path.Combine(db, "games", id + ".json");
+        var result = CheatTableImporter.Import(await File.ReadAllTextAsync(ctPath));
+
+        GameDefinition game;
+        if (File.Exists(target))
+        {
+            game = Json.Deserialize<GameDefinition>(await File.ReadAllBytesAsync(target));
+            game.Cheats.RemoveAll(c => c.Id.StartsWith("ct-", StringComparison.Ordinal)); // ganti hasil impor sebelumnya
+            game.Revision++;
+        }
+        else
+        {
+            game = new GameDefinition
+            {
+                Id = id,
+                Name = Opt(args, "--name") ?? throw new ArgumentException("--name wajib untuk game baru"),
+                ProcessNames = [Opt(args, "--process") ?? throw new ArgumentException("--process wajib untuk game baru")],
+                SteamAppId = Opt(args, "--steam") is { } st ? int.Parse(st) : null,
+                Author = Opt(args, "--author"),
+            };
+        }
+        game.Cheats.AddRange(result.Cheats);
+        var errors = GameDefinitionValidator.Validate(game);
+        if (errors.Count > 0) return Fail(string.Join("\n  ", errors));
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        await File.WriteAllBytesAsync(target, Json.SerializeToUtf8(game));
+        Console.WriteLine($"✓ {target}: {result.Cheats.Count} cheat diimpor, {result.ScriptEntries} skrip AA dilewati, {result.UnsupportedEntries} entri tidak didukung.");
+        Console.WriteLine("  Uji di game, lalu jalankan 'nusa-db build --db " + db + "'. Pastikan Anda punya izin pembuat tabel untuk mendistribusikannya.");
         return 0;
     }
 

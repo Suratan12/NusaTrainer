@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Diagnostics;
 using NusaTrainer.Core.Database;
+using NusaTrainer.Core.Library;
 using NusaTrainer.Core.Mods;
 using NusaTrainer.Core.Settings;
 using NusaTrainer.Core.Update;
@@ -20,9 +22,13 @@ public sealed class AppServices : IDisposable
     public ModInstaller Mods { get; }
     public AppUpdater AppUpdater { get; }
     public IHotkeyService Hotkeys { get; }
+    public UserLibrary Library { get; }
 
     /// <summary>Diisi oleh jendela utama: membuka dialog pemilihan folder.</summary>
     public Func<string, Task<string?>> PickFolderAsync { get; set; } = _ => Task.FromResult<string?>(null);
+
+    /// <summary>Diisi oleh jendela utama: dialog pilih file (judul, nama filter, pola mis. "*.exe").</summary>
+    public Func<string, string, string[], Task<string?>> PickFileAsync { get; set; } = (_, _, _) => Task.FromResult<string?>(null);
 
     public AppServices()
     {
@@ -34,6 +40,19 @@ public sealed class AppServices : IDisposable
         Mods = new ModInstaller(Http, AppPaths.DataRoot);
         AppUpdater = new AppUpdater(Http);
         Hotkeys = OperatingSystem.IsWindows() ? new WindowsHotkeyService() : new NullHotkeyService();
+        Library = UserLibrary.Load();
+    }
+
+    public void SaveLibrary()
+    {
+        try { Library.Save(); }
+        catch (Exception ex) { Log.Error("Gagal menyimpan library.json", ex); }
+    }
+
+    public static void OpenUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme is not ("https" or "http")) return;
+        try { Process.Start(new ProcessStartInfo(u.AbsoluteUri) { UseShellExecute = true }); } catch { }
     }
 
     public void SaveSettings()

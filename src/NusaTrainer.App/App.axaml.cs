@@ -18,6 +18,7 @@ public partial class App : Application
             var services = new AppServices();
             var window = new MainWindow();
             services.PickFolderAsync = window.PickFolderAsync;
+            services.PickFileAsync = window.PickFileAsync;
             var vm = new MainViewModel(services);
             window.DataContext = vm;
             desktop.MainWindow = window;

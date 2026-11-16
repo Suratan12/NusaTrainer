@@ -1,11 +1,13 @@
 {
   "id": "demogame",
   "name": "Demo Game (Uji Coba)",
-  "revision": 1,
+  "revision": 2,
   "description": "Game uji coba yang ikut di repo (tools/DemoGame). Jalankan dengan 'dotnet run --project tools/DemoGame' untuk mencoba semua jenis cheat dan pemasangan mod tanpa menyentuh game sungguhan.",
   "author": "NusaTrainer",
   "supportedGameVersion": "1.0",
-  "processNames": ["DemoGame"],
+  "processNames": [
+    "DemoGame"
+  ],
   "accentColor": "#14B8A6",
   "cheats": [
     {
@@ -15,7 +17,11 @@
       "description": "Mengunci nyawa di 100.",
       "type": "toggle",
       "hotkey": "Num1",
-      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 16 },
+      "address": {
+        "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21",
+        "region": "data",
+        "patternOffset": 16
+      },
       "valueType": "int32",
       "operation": "freeze",
       "value": 100
@@ -27,7 +33,11 @@
       "description": "Magazin tidak pernah habis.",
       "type": "toggle",
       "hotkey": "Num2",
-      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 20 },
+      "address": {
+        "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21",
+        "region": "data",
+        "patternOffset": 20
+      },
       "valueType": "int32",
       "operation": "freeze",
       "value": 30
@@ -38,7 +48,11 @@
       "category": "Inventaris",
       "type": "button",
       "hotkey": "Num3",
-      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 24 },
+      "address": {
+        "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21",
+        "region": "data",
+        "patternOffset": 24
+      },
       "valueType": "int32",
       "operation": "add",
       "value": 1000
@@ -48,13 +62,31 @@
       "name": "Atur Jumlah Emas",
       "category": "Inventaris",
       "type": "slider",
-      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 24 },
+      "address": {
+        "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21",
+        "region": "data",
+        "patternOffset": 24
+      },
       "valueType": "int32",
       "operation": "set",
       "min": 0,
       "max": 100000,
       "step": 500,
       "default": 5000
+    },
+    {
+      "id": "edit-gold",
+      "name": "Edit Emas",
+      "category": "Inventaris",
+      "description": "Lihat jumlah emas sekarang, ketik nilai baru, atau kunci nilainya.",
+      "type": "number",
+      "hotkey": "Num5",
+      "address": {
+        "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21",
+        "region": "data",
+        "patternOffset": 24
+      },
+      "valueType": "int32"
     },
     {
       "id": "game-speed",
@@ -64,7 +96,11 @@
       "type": "slider",
       "hotkeyIncrease": "Num6",
       "hotkeyDecrease": "Num4",
-      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 28 },
+      "address": {
+        "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21",
+        "region": "data",
+        "patternOffset": 28
+      },
       "valueType": "float",
       "operation": "freeze",
       "min": 0.5,

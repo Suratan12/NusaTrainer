@@ -29,7 +29,24 @@ public sealed class CheatViewModel : ViewModelBase
     public bool IsToggle => Definition.Type == CheatKind.Toggle;
     public bool IsSlider => Definition.Type == CheatKind.Slider;
     public bool IsButton => Definition.Type == CheatKind.Button;
+    public bool IsNumber => Definition.Type == CheatKind.Number;
     public bool IsLockable => IsSlider && Definition.Operation == CheatOperation.Freeze;
+
+    private string _numberText = "";
+    private string? _currentValueText;
+
+    /// <summary>Teks yang diketik pengguna untuk cheat Number.</summary>
+    public string NumberText { get => _numberText; set => Set(ref _numberText, value); }
+
+    /// <summary>Nilai di memori game saat ini (diperbarui berkala).</summary>
+    public string? CurrentValueText
+    {
+        get => _currentValueText;
+        private set { if (Set(ref _currentValueText, value)) OnPropertyChanged(nameof(HasCurrentValue)); }
+    }
+    public bool HasCurrentValue => _currentValueText is not null;
+
+    public RelayCommand ApplyNumberCommand { get; private set; } = null!;
 
     public double Min => Definition.Min;
     public double Max => Definition.Max;
@@ -50,6 +67,46 @@ public sealed class CheatViewModel : ViewModelBase
         if (definition.HotkeyIncrease is { } i) keys.Add("+ " + HotkeyParser.Pretty(i));
         Hotkeys = keys;
         PressCommand = new RelayCommand(Press, () => CanInteract);
+        ApplyNumberCommand = new RelayCommand(ApplyNumber, () => CanInteract);
+    }
+
+    private bool TryParseNumber(out double value) =>
+        double.TryParse(_numberText.Trim(), NumberStyles.Float, CultureInfo.CurrentCulture, out value)
+        || double.TryParse(_numberText.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+
+    private void ApplyNumber()
+    {
+        var session = _session;
+        if (session is null) return;
+        if (!TryParseNumber(out var v)) { ErrorText = "Masukkan angka yang valid."; return; }
+        IsBusy = true;
+        ErrorText = null;
+        Task.Run(() => session.SetNumber(Definition.Id, v)).ContinueWith(t => OnUi(() =>
+        {
+            IsBusy = false;
+            if (t.Exception is { } ex) ErrorText = ex.InnerException?.Message ?? ex.Message;
+        }));
+    }
+
+    /// <summary>Baca nilai terkini dari memori (dipanggil di thread latar).</summary>
+    public void RefreshCurrentValue()
+    {
+        var session = _session;
+        if (session is null || !IsNumber) return;
+        string? text;
+        try
+        {
+            var v = session.ReadValue(Definition.Id);
+            text = Definition.ValueType is DataType.Float or DataType.Double
+                ? v.ToString("0.###", CultureInfo.CurrentCulture)
+                : v.ToString("N0", CultureInfo.CurrentCulture);
+        }
+        catch { text = "—"; }
+        OnUi(() =>
+        {
+            CurrentValueText = text;
+            if (_numberText.Length == 0 && text != "—") NumberText = text.Replace(CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator, "");
+        });
     }
 
     public bool CanInteract => _session is not null && !_isBusy;
@@ -59,7 +116,12 @@ public sealed class CheatViewModel : ViewModelBase
         get => _isBusy;
         private set
         {
-            if (Set(ref _isBusy, value)) { OnPropertyChanged(nameof(CanInteract)); PressCommand.RaiseCanExecuteChanged(); }
+            if (Set(ref _isBusy, value))
+            {
+                OnPropertyChanged(nameof(CanInteract));
+                PressCommand.RaiseCanExecuteChanged();
+                ApplyNumberCommand.RaiseCanExecuteChanged();
+            }
         }
     }
 
@@ -99,9 +161,10 @@ public sealed class CheatViewModel : ViewModelBase
     {
         _session = session;
         ErrorText = null;
-        if (session is null) SetEnabledSilently(false);
+        if (session is null) { SetEnabledSilently(false); CurrentValueText = null; }
         OnPropertyChanged(nameof(CanInteract));
         PressCommand.RaiseCanExecuteChanged();
+        ApplyNumberCommand.RaiseCanExecuteChanged();
     }
 
     /// <summary>Dipanggil bila sesi mematikan cheat sendiri (mis. pointer hilang).</summary>
@@ -115,7 +178,7 @@ public sealed class CheatViewModel : ViewModelBase
     {
         if (!CanInteract) return;
         if (IsButton) Press();
-        else if (IsToggle || IsLockable) IsEnabled = !IsEnabled;
+        else if (IsToggle || IsLockable || IsNumber) IsEnabled = !IsEnabled;
     }
 
     public void StepFromHotkey(int direction)
@@ -140,9 +203,15 @@ public sealed class CheatViewModel : ViewModelBase
         ErrorText = null;
         try
         {
+            bool hasNumber = TryParseNumber(out var number);
             await Task.Run(() =>
             {
                 if (value && IsSlider) session.SetSliderValue(Definition.Id, _sliderValue);
+                if (value && IsNumber)
+                {
+                    // Kunci angka yang diketik; bila kosong, kunci nilai saat ini.
+                    session.SetNumber(Definition.Id, hasNumber ? number : session.ReadValue(Definition.Id));
+                }
                 session.SetToggle(Definition.Id, value);
             });
         }

@@ -23,15 +23,20 @@ Perintah ini memvalidasi semua file, menghitung SHA-256, dan memperbarui `databa
   "author": "nama-anda",
   "supportedGameVersion": "1.2.3 (Steam)",    // versi game tempat cheat diuji
   "processNames": ["ContohRPG-Win64-Shipping"],// nama proses (dengan/tanpa .exe)
-  "steamAppId": 123456,                       // opsional: tombol "Mainkan" + deteksi folder game
+  "steamAppId": 123456,                       // opsional: cocokkan game Steam terpasang + tombol "Mainkan"
+  "epicAppNames": ["Fennec"],                 // opsional: AppName di manifest Epic (C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests\*.item)
+  "gogIds": ["1207658924"],                   // opsional: ID produk GOG
   "exeRelativeDir": "ContohRPG/Binaries/Win64",// opsional: lokasi exe relatif terhadap root game
   "accentColor": "#7C3AED",
   "is64Bit": true,
   "onlineMultiplayer": false,                 // true = DITOLAK (khusus single-player)
   "cheats": [ ... ],
-  "mods": [ ... ]
+  "mods": [ ... ],
+  "externalTrainers": [ ... ]                 // opsional, lihat bagian 6
 }
 ```
+
+Game terpasang dicocokkan dengan definisi lewat `steamAppId` / `epicAppNames` / `gogIds`, atau (cadangan) bila salah satu `processNames` ada sebagai file .exe di folder game. Game terpasang yang tidak ada di database tetap muncul di pustaka sebagai "Tanpa cheat bawaan".
 
 ## 2. Jenis cheat
 
@@ -40,6 +45,7 @@ Perintah ini memvalidasi semua file, menghitung SHA-256, dan memperbarui `databa
 | `toggle` | Saklar on/off | `freeze` (kunci terus), `set` (tulis sekali; `restoreOnDisable: true` untuk mengembalikan nilai asli) |
 | `slider` | Penggeser + nilai | `set` (tulis saat digeser), `freeze` (muncul saklar kunci) |
 | `button` | Tombol "Terapkan" | `set`, `add` (tambah ke nilai sekarang) |
+| `number` | Nilai sekarang + kotak angka + "Atur" + saklar kunci (seperti "Edit Emas") | (diabaikan) |
 
 Field umum:
 
@@ -150,7 +156,31 @@ Untuk efek seperti "tidak menerima damage", ganti instruksi pengurang nyawa deng
 - Path relatif seperti `"mods/x.zip"` di-host bersama database (letakkan di `database/mods/`) — cocok untuk mod kecil. Untuk file besar gunakan GitHub Releases atau hosting lain (HTTPS).
 - **Hanya distribusikan mod yang diizinkan oleh pembuatnya.**
 
-## 6. Rilis aplikasi & auto-update aplikasi
+## 6. Trainer eksternal & tabel Cheat Engine
+
+### Tautan trainer (di database)
+
+```json
+"externalTrainers": [
+  { "name": "Contoh RPG Trainer +20", "author": "pembuat-trainer", "homepage": "https://situs-resmi-pembuat/halaman-trainer", "notes": "Untuk versi 1.2.3" }
+]
+```
+
+Aplikasi hanya membuka halaman tersebut di browser; pengguna mengunduh sendiri lalu menambahkannya lewat **Trainer & Tabel → Tambah trainer**. Database tidak boleh berisi tautan unduhan langsung ke file .exe pihak ketiga atau salinan trainer berbayar.
+
+### Mengubah tabel Cheat Engine menjadi entri database
+
+```bash
+dotnet run --project tools/DbTool -- import-ct --ct "ContohRPG.CT" --db database --id contoh-rpg --name "Contoh RPG" --process ContohRPG-Win64-Shipping.exe --steam 123456
+```
+
+- Entri alamat/pointer (Byte, 2/4/8 Bytes, Float, Double) → cheat `number` dengan id berawalan `ct-`; hotkey "Toggle Activation" ikut diimpor.
+- Skrip Auto Assembler, string, array of byte, dan alamat berupa simbol dilewati (dihitung di keluaran).
+- Menjalankan ulang perintah ini mengganti semua cheat `ct-*` yang lama.
+- Setelah itu ubah sendiri entri penting menjadi `toggle`/`slider` agar lebih nyaman (mis. "Nyawa Tak Terbatas" = `toggle` + `freeze`).
+- **Minta izin pembuat tabel** sebelum mendistribusikannya lewat database Anda.
+
+## 7. Rilis aplikasi & auto-update aplikasi
 
 Tulis `database/app-release.json`:
 
@@ -165,7 +195,7 @@ Tulis `database/app-release.json`:
 
 Workflow *Build & Release* (saat push tag `v*`) mencetak cuplikan ini di catatan rilis. Opsional `"minAppVersion"` dapat di-set lewat `nusa-db build --min-app-version 1.1.0` agar aplikasi lama tidak memakai database yang butuh fitur baru.
 
-## 7. Keamanan rantai update
+## 8. Keamanan rantai update
 
 ```
 editor → push database/ → GitHub Actions (kunci privat di Secrets)

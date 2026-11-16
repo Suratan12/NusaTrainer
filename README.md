@@ -8,8 +8,11 @@ Aplikasi **cheat & mod untuk game PC Windows (single-player)** dengan database y
 
 | | |
 |---|---|
-| 🎮 **Deteksi game otomatis** | Begitu game dijalankan, NusaTrainer menemukan prosesnya dan langsung terhubung. |
-| 🔘 **Cheat toggle / slider / tombol** | Kunci nilai (nyawa, amunisi), atur nilai lewat slider (kecepatan, emas), atau tambah sekali klik. |
+| 📚 **Pustaka game otomatis** | Memindai game terpasang dari **Steam** (semua library), **Epic Games**, dan **GOG**, plus game yang ditambah manual (.exe). Game yang ada di database langsung mendapat cheat-nya. |
+| 🎮 **Deteksi game berjalan** | Begitu game dijalankan, NusaTrainer menemukan prosesnya dan langsung terhubung. |
+| 🧰 **Trainer eksternal** | Tambahkan trainer .exe (mis. dari situs resmi pembuatnya) per game; jalankan dari aplikasi atau otomatis saat game dimulai. |
+| 📄 **Impor tabel Cheat Engine (.CT)** | Entri alamat/pointer menjadi cheat bawaan (lihat nilai, ubah, kunci — termasuk hotkey dari tabel). Tabel berisi skrip dibuka lewat Cheat Engine dengan satu klik. |
+| 🔘 **Cheat toggle / slider / tombol / angka** | Kunci nilai (nyawa, amunisi), atur lewat slider (kecepatan), tambah sekali klik, atau "Edit Emas": lihat nilai sekarang, ketik nilai baru, kunci. |
 | 🧬 **Tiga cara menemukan alamat** | Pointer statis ala Cheat Engine (`module+offset → [ptr]+off…`), **AOB scan** dengan wildcard (tahan update game), dan alamat relatif-RIP. |
 | 🩹 **Patch kode** | NOP/ganti instruksi dengan verifikasi byte asli; otomatis dikembalikan saat cheat dimatikan atau aplikasi ditutup. |
 | ⌨️ **Hotkey global** | Bekerja saat game sedang fokus (mis. `Numpad 1`, `Ctrl+F2`). |
@@ -17,9 +20,19 @@ Aplikasi **cheat & mod untuk game PC Windows (single-player)** dengan database y
 | 🔄 **Auto-update database** | Saat aplikasi dibuka dan tiap 6 jam: hanya file yang berubah yang diunduh. |
 | 🔏 **Database ditandatangani** | `index.json` ditandatangani ECDSA P-256; setiap file diverifikasi SHA-256. Database palsu/ diubah orang lain **ditolak**. |
 | ⬆️ **Self-update aplikasi** | Banner "versi baru tersedia" → unduh, verifikasi, pasang, buka ulang. |
-| 🛡️ **Khusus single-player** | Menolak game bertanda online dan game yang memuat anti-cheat (EAC, BattlEye, Vanguard, dll.). |
+| 🛡️ **Khusus single-player** | Menolak game bertanda online dan game yang memuat anti-cheat (EAC, BattlEye, Vanguard, dll.) — termasuk tidak menjalankan trainer/tabel untuk game tersebut. |
+
+![Pustaka game terpasang, trainer & tabel Cheat Engine](docs/img/library.png)
 
 ![Auto-update database & aplikasi](docs/img/auto-update.png)
+
+### Dari mana cheat-nya?
+
+1. **Database NusaTrainer** (auto-update) — cheat yang sudah diuji, ditulis komunitas Anda sendiri. Tabel Cheat Engine komunitas bisa diubah menjadi entri database dengan `nusa-db import-ct` (dengan izin pembuat tabel).
+2. **Tabel Cheat Engine milik pengguna** — impor .CT langsung di aplikasi.
+3. **Trainer eksternal** — trainer .exe yang diunduh pengguna dari situs resmi pembuatnya.
+
+NusaTrainer **tidak** memakai atau menyalin database/trainer WeMod (konten berbayar dan berhak cipta), dan tidak mengunduh atau menyebarkan ulang trainer pihak ketiga secara otomatis — database hanya boleh berisi *tautan* ke halaman resmi trainer.
 
 ## Mulai cepat (Windows)
 
@@ -75,7 +88,7 @@ Panduan lengkap menulis cheat & mod (termasuk cara mencari alamat dengan Cheat E
 ```
 src/NusaTrainer.Core     Mesin trainer (memori, AOB scan, sesi cheat), database & updater, mod installer
 src/NusaTrainer.App      Aplikasi desktop (Avalonia UI): pustaka, cheat, mod, pengaturan, hotkey, self-update
-tools/DbTool             CLI `nusa-db`: keygen, validate, build (hash + tanda tangan), hash
+tools/DbTool             CLI `nusa-db`: keygen, validate, build (hash + tanda tangan), hash, import-ct
 tools/DemoGame           Game uji coba untuk mencoba trainer dengan aman
 database/                Database cheat/mod (juga dibundel ke aplikasi sebagai database offline)
 tests/                   Unit test + uji integrasi

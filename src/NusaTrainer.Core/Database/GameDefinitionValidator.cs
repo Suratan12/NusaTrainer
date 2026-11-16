@@ -55,6 +55,15 @@ public static partial class GameDefinitionValidator
                 errors.Add($"{p}: button tidak bisa memakai operation freeze.");
             if (c.Type == CheatKind.Slider && c.Operation == CheatOperation.Add)
                 errors.Add($"{p}: slider tidak bisa memakai operation add.");
+            if (c.Type == CheatKind.Number && c.Patch is not null)
+                errors.Add($"{p}: number tidak bisa memakai patch.");
+        }
+
+        foreach (var t in g.ExternalTrainers)
+        {
+            if (string.IsNullOrWhiteSpace(t.Name)) errors.Add("externalTrainers: name kosong.");
+            if (!Uri.TryCreate(t.Homepage, UriKind.Absolute, out var hp) || hp.Scheme != Uri.UriSchemeHttps)
+                errors.Add($"externalTrainers '{t.Name}': homepage harus HTTPS.");
         }
 
         var modIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

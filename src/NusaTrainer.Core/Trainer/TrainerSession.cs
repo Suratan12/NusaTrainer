@@ -69,9 +69,9 @@ public sealed class TrainerSession : IDisposable
                 return;
             }
 
-            if (cheat.Type == CheatKind.Slider)
+            if (cheat.Type is CheatKind.Slider or CheatKind.Number)
             {
-                // Toggle pada slider = kunci nilai slider.
+                // Toggle pada slider/angka = kunci nilai tersebut.
                 if (enabled) WriteValue(cheat, state.SliderValue);
                 state.Enabled = enabled;
                 return;
@@ -102,12 +102,15 @@ public sealed class TrainerSession : IDisposable
         lock (_lock)
         {
             var (cheat, state) = Get(cheatId);
-            value = Math.Clamp(value, cheat.Min, cheat.Max);
+            if (cheat.Type == CheatKind.Slider) value = Math.Clamp(value, cheat.Min, cheat.Max);
             state.SliderValue = value;
-            if (cheat.Operation != CheatOperation.Freeze || state.Enabled)
+            if (cheat.Type == CheatKind.Number || cheat.Operation != CheatOperation.Freeze || state.Enabled)
                 WriteValue(cheat, value);
         }
     }
+
+    /// <summary>Nilai angka (Number) / slider yang tersimpan.</summary>
+    public void SetNumber(string cheatId, double value) => SetSliderValue(cheatId, value);
 
     /// <summary>Untuk cheat Button (mis. "Tambah 1000 emas").</summary>
     public void Press(string cheatId)
@@ -130,11 +133,11 @@ public sealed class TrainerSession : IDisposable
                 if (!state.Enabled) continue;
                 var cheat = _cheats[id];
                 if (cheat.Patch is not null) continue;
-                bool freeze = cheat.Operation == CheatOperation.Freeze;
+                bool freeze = cheat.Type == CheatKind.Number || cheat.Operation == CheatOperation.Freeze;
                 if (!freeze) continue;
                 try
                 {
-                    WriteValue(cheat, cheat.Type == CheatKind.Slider ? state.SliderValue : cheat.Value);
+                    WriteValue(cheat, cheat.Type is CheatKind.Slider or CheatKind.Number ? state.SliderValue : cheat.Value);
                 }
                 catch (Exception ex)
                 {

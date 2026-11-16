@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "updated": "2026-11-16T03:38:28.0614199+00:00",
+  "updated": "2026-11-16T06:51:38.0782808+00:00",
   "games": [
     {
       "id": "demogame",
       "name": "Demo Game (Uji Coba)",
-      "revision": 1,
+      "revision": 2,
       "file": "games/demogame.json",
-      "sha256": "475c8c9b787f4df34e7467ae1cbcb1d6cd66dec57c8158f8f353776a57636e32",
-      "cheatCount": 5,
+      "sha256": "dbe1746f25d3daad4972772533725a5924d907558fd1f092c8b212e2eeaa7bf7",
+      "cheatCount": 6,
       "modCount": 1
     }
   ]

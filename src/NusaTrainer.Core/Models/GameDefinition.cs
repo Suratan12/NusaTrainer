@@ -16,6 +16,10 @@ public sealed class GameDefinition
     /// <summary>Nama proses tanpa atau dengan ".exe", mis. ["DemoGame", "DemoGame.exe"].</summary>
     public List<string> ProcessNames { get; set; } = new();
     public int? SteamAppId { get; set; }
+    /// <summary>AppName Epic Games (dari manifest .item), untuk mencocokkan game terpasang.</summary>
+    public List<string>? EpicAppNames { get; set; }
+    /// <summary>ID produk GOG Galaxy, untuk mencocokkan game terpasang.</summary>
+    public List<string>? GogIds { get; set; }
     /// <summary>Folder exe relatif terhadap root game (mis. "Binaries/Win64"), untuk menebak root folder dari proses yang berjalan.</summary>
     public string? ExeRelativeDir { get; set; }
     /// <summary>Warna aksen header (hex), mis. "#7C3AED".</summary>
@@ -26,6 +30,17 @@ public sealed class GameDefinition
     public bool Is64Bit { get; set; } = true;
     public List<CheatDefinition> Cheats { get; set; } = new();
     public List<ModDefinition> Mods { get; set; } = new();
+    /// <summary>Tautan ke trainer eksternal resmi (hanya halaman unduhan; aplikasi tidak mengunduh .exe otomatis).</summary>
+    public List<ExternalTrainerLink> ExternalTrainers { get; set; } = new();
+}
+
+public sealed class ExternalTrainerLink
+{
+    public string Name { get; set; } = "";
+    public string? Author { get; set; }
+    /// <summary>Halaman resmi (HTTPS) tempat pengguna mengunduh trainer.</summary>
+    public string Homepage { get; set; } = "";
+    public string? Notes { get; set; }
 }
 
 public enum CheatKind
@@ -33,6 +48,8 @@ public enum CheatKind
     Toggle,
     Slider,
     Button,
+    /// <summary>Kotak angka: lihat nilai sekarang, tulis nilai baru, dan opsional kunci (seperti "Edit Emas").</summary>
+    Number,
 }
 
 public enum CheatOperation

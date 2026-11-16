@@ -17,6 +17,12 @@
                 <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="12"/>
               </StackPanel>
             </Border>
+            <Border Classes="pill" Background="#66000000">
+              <TextBlock Text="{Binding SourceLabel}" FontSize="12" Foreground="#C9CFDD"/>
+            </Border>
+            <Border Classes="pill" Background="#7F1D1D" IsVisible="{Binding HasAntiCheat}">
+              <TextBlock Text="⚠ Anti-cheat / online" FontSize="12" Foreground="#FECACA"/>
+            </Border>
             <Border Classes="pill" Background="#66000000" IsVisible="{Binding HasSupportedVersion}">
               <TextBlock Text="{Binding SupportedVersion}" FontSize="12" Foreground="#C9CFDD"/>
             </Border>
@@ -31,6 +37,19 @@
     <TabControl Margin="24,6,24,0" Padding="0">
       <!-- ========== Cheat ========== -->
       <TabItem Header="{Binding CheatTabHeader}">
+        <DockPanel>
+        <Border DockPanel.Dock="Top" Classes="card" Padding="22,20" Margin="12,12,16,0" IsVisible="{Binding HasNoCheats}">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Belum ada cheat bawaan untuk game ini" FontWeight="SemiBold" FontSize="15"/>
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Impor tabel Cheat Engine (.CT) — entri alamat/pointer akan menjadi cheat di sini — atau tambahkan trainer (.exe) yang Anda unduh sendiri."/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Classes="accent" Content="Impor tabel Cheat Engine…" Command="{Binding ImportTableCommand}"/>
+              <Button Content="Tambah trainer…" Command="{Binding AddTrainerCommand}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding ToolsMessage}" IsVisible="{Binding HasToolsMessage}" Foreground="#93C5FD" FontSize="12" TextWrapping="Wrap"/>
+          </StackPanel>
+        </Border>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
           <ItemsControl ItemsSource="{Binding Cheats}" Margin="12,8,16,24">
             <ItemsControl.ItemTemplate>
@@ -42,6 +61,9 @@
                       <StackPanel VerticalAlignment="Center" Spacing="3">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
                         <TextBlock Text="{Binding Description}" Classes="muted" IsVisible="{Binding HasDescription}" TextWrapping="Wrap"/>
+                        <TextBlock Classes="muted" IsVisible="{Binding HasCurrentValue}">
+                          <Run Text="Nilai sekarang: "/><Run Text="{Binding CurrentValueText}" FontWeight="SemiBold" Foreground="#E5E7EB"/>
+                        </TextBlock>
                         <TextBlock Text="{Binding ErrorText}" Foreground="#F87171" FontSize="12" IsVisible="{Binding HasError}" TextWrapping="Wrap"/>
                       </StackPanel>
                       <ItemsControl Grid.Column="1" ItemsSource="{Binding Hotkeys}" VerticalAlignment="Center" Margin="12,0">
@@ -59,6 +81,13 @@
                                       OnContent="" OffContent="" HorizontalAlignment="Right" MinWidth="0"/>
                         <Button IsVisible="{Binding IsButton}" Command="{Binding PressCommand}" Classes="accent"
                                 Content="Terapkan" HorizontalAlignment="Right" Padding="18,6"/>
+                        <Grid IsVisible="{Binding IsNumber}" ColumnDefinitions="*,Auto,Auto">
+                          <TextBox Text="{Binding NumberText}" IsEnabled="{Binding CanInteract}" Watermark="Nilai baru"
+                                   VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
+                          <Button Grid.Column="1" Content="Atur" Command="{Binding ApplyNumberCommand}" Margin="8,0" VerticalAlignment="Center"/>
+                          <ToggleSwitch Grid.Column="2" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding CanInteract}"
+                                        OnContent="" OffContent="" MinWidth="0" ToolTip.Tip="Kunci nilai"/>
+                        </Grid>
                         <Grid IsVisible="{Binding IsSlider}" ColumnDefinitions="*,70,Auto">
                           <Slider Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding SliderValue}"
                                   SmallChange="{Binding Step}" LargeChange="{Binding Step}" IsEnabled="{Binding CanInteract}"
@@ -77,6 +106,7 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
         </ScrollViewer>
+        </DockPanel>
       </TabItem>
 
       <!-- ========== Mod ========== -->
@@ -132,6 +162,93 @@
             </ItemsControl>
           </ScrollViewer>
         </DockPanel>
+      </TabItem>
+
+      <!-- ========== Trainer & Tabel ========== -->
+      <TabItem Header="{Binding ToolsTabHeader}">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="10" Margin="12,8,16,24">
+            <Border Classes="card" Padding="18,14">
+              <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="16,0,0,0">
+                  <Button Content="Impor tabel .CT…" Command="{Binding ImportTableCommand}"/>
+                  <Button Classes="accent" Content="Tambah trainer…" Command="{Binding AddTrainerCommand}"/>
+                </StackPanel>
+                <StackPanel Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="Trainer &amp; tabel Cheat Engine Anda" FontWeight="SemiBold"/>
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Trainer .exe dijalankan dari sini (bisa otomatis saat game dimulai). Tabel .CT: entri alamat menjadi cheat di tab Cheat; skrip dibuka lewat Cheat Engine."/>
+                </StackPanel>
+              </DockPanel>
+            </Border>
+            <TextBlock Text="{Binding ToolsMessage}" IsVisible="{Binding HasToolsMessage}" Foreground="#93C5FD" TextWrapping="Wrap" Margin="2,0"/>
+            <TextBlock Text="{Binding BlockReason}" IsVisible="{Binding HasAntiCheat}" Foreground="#FCA5A5" TextWrapping="Wrap" Margin="2,0"/>
+            <TextBlock Text="Belum ada trainer atau tabel untuk game ini." Classes="muted" IsVisible="{Binding HasNoTools}" Margin="2,6"/>
+
+            <ItemsControl ItemsSource="{Binding Tools}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><StackPanel Spacing="8"/></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ToolViewModel">
+                  <Border Classes="card" Padding="18,12">
+                    <DockPanel>
+                      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <CheckBox IsChecked="{Binding AutoLaunch}" Content="Jalankan otomatis" IsVisible="{Binding IsTrainer}"/>
+                        <Button Content="Hapus" Command="{Binding RemoveCommand}"/>
+                        <Button Classes="accent" Content="{Binding LaunchLabel}" Command="{Binding LaunchCommand}"/>
+                      </StackPanel>
+                      <StackPanel Spacing="3" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+                          <Border Classes="pill" Background="#1E293B" Padding="8,1">
+                            <TextBlock Text="{Binding KindLabel}" FontSize="11" Foreground="#93C5FD"/>
+                          </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Path}" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding Message}" IsVisible="{Binding HasMessage}" FontSize="12" Foreground="#FCD34D" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="card" Padding="18,14" IsVisible="{Binding HasImported}">
+              <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Hapus cheat impor" Command="{Binding RemoveImportedCommand}" VerticalAlignment="Center"/>
+                <TextBlock VerticalAlignment="Center" TextWrapping="Wrap">
+                  <Run Text="{Binding ImportedCount}" FontWeight="SemiBold"/><Run Text=" cheat dari tabel Cheat Engine Anda tampil di tab Cheat."/>
+                </TextBlock>
+              </DockPanel>
+            </Border>
+
+            <StackPanel Spacing="8" IsVisible="{Binding HasTrainerLinks}" Margin="0,8,0,0">
+              <TextBlock Text="TRAINER YANG DIREKOMENDASIKAN" Classes="section" Margin="2,0"/>
+              <ItemsControl ItemsSource="{Binding TrainerLinks}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><StackPanel Spacing="8"/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TrainerLinkViewModel">
+                    <Border Classes="card" Padding="18,12">
+                      <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Buka halaman unduhan ↗" Command="{Binding OpenCommand}" VerticalAlignment="Center"/>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                          <TextBlock Text="{Binding Meta}" Classes="muted" IsVisible="{Binding HasMeta}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+
+            <TextBlock Classes="muted" TextWrapping="Wrap" Margin="2,8,0,0"
+                       Text="⚠ Unduh trainer hanya dari situs resmi pembuatnya. Trainer dari sumber tidak jelas sering berisi malware. Gunakan hanya untuk game single-player."/>
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
 
       <!-- ========== Info ========== -->
