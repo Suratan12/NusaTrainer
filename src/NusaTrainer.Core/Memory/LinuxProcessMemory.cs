@@ -83,7 +83,9 @@ public sealed class LinuxProcessMemory : IProcessMemory
 
     public IReadOnlyList<ModuleInfo> GetModules() =>
         ReadMaps()
-            .Where(m => m.path.StartsWith('/'))
+            // Hanya file sungguhan; abaikan region anonim/JIT seperti "/memfd:doublemapper (deleted)".
+            .Where(m => m.path.StartsWith('/') && !m.path.StartsWith("/memfd:", StringComparison.Ordinal)
+                        && !m.path.EndsWith("(deleted)", StringComparison.Ordinal) && !m.path.StartsWith("/dev/", StringComparison.Ordinal))
             .GroupBy(m => m.path)
             .Select(g => new ModuleInfo(Path.GetFileName(g.Key), g.Min(x => x.start), g.Max(x => x.end) - g.Min(x => x.start), g.Key))
             .ToList();

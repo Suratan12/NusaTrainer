@@ -38,9 +38,21 @@ public sealed class ExternalTrainerLink
 {
     public string Name { get; set; } = "";
     public string? Author { get; set; }
-    /// <summary>Halaman resmi (HTTPS) tempat pengguna mengunduh trainer.</summary>
+    /// <summary>Halaman resmi (HTTPS) pembuat trainer.</summary>
     public string Homepage { get; set; } = "";
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Opsional: URL unduhan LANGSUNG (HTTPS, .zip atau .exe) yang sudah dicek kurator. Bila diisi, aplikasi
+    /// menampilkan tombol "Unduh &amp; pasang" — tanpa halaman iklan, dan file diverifikasi dengan <see cref="Sha256"/>.
+    /// </summary>
+    public string? DownloadUrl { get; set; }
+    public string? Sha256 { get; set; }
+    public string? TrainerVersion { get; set; }
+    /// <summary>Versi game yang didukung (awalan versi file exe, mis. "1.5.78"). Kosong = tidak dibatasi.</summary>
+    public List<string>? GameVersions { get; set; }
+    /// <summary>Build ID Steam yang didukung (dari appmanifest).</summary>
+    public List<string>? SteamBuildIds { get; set; }
 }
 
 public enum CheatKind

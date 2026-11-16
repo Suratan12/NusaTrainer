@@ -83,6 +83,14 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
     public List<ModViewModel> Mods { get; }
     public ObservableCollection<ToolViewModel> Tools { get; } = new();
     public List<TrainerLinkViewModel> TrainerLinks { get; }
+    public ScannerViewModel Scanner { get; }
+    private int _selectedTab;
+    public int SelectedTabIndex { get => _selectedTab; set => Set(ref _selectedTab, value); }
+    public RelayCommand OpenScannerCommand => new(() => SelectedTabIndex = 1);
+    /// <summary>PID game yang sedang berjalan (untuk pemindai), atau null.</summary>
+    public int? RunningPid => _attachedPid;
+    public string? GameVersionText => Installed?.VersionText is { } v ? "Versi game: " + v : null;
+    public bool HasGameVersion => GameVersionText is not null;
     public bool HasTrainerLinks => TrainerLinks.Count > 0;
     public bool HasNoTools => Tools.Count == 0;
     public int ImportedCount { get; }
@@ -139,8 +147,9 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
             return vm;
         }).ToList();
         Mods = Definition.Mods.Select(m => new ModViewModel(services, this, m)).ToList();
-        TrainerLinks = Definition.ExternalTrainers.Select(t => new TrainerLinkViewModel(t)).ToList();
         foreach (var t in services.Library.ToolsFor(Keys)) Tools.Add(new ToolViewModel(services, this, t));
+        TrainerLinks = Definition.ExternalTrainers.Select(t => new TrainerLinkViewModel(services, this, t)).ToList();
+        Scanner = new ScannerViewModel(services, this);
 
         _gameFolder = services.Settings.GameFolders.TryGetValue(Definition.Id, out var f) && Directory.Exists(f) ? f
             : installed?.InstallDir
@@ -302,6 +311,27 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
         _pendingMessage = null;
     }
 
+    /// <summary>Muat ulang tampilan game (mis. setelah cheat baru ditambahkan) dan tampilkan pesan.</summary>
+    public void ReloadWithMessage(string message)
+    {
+        _pendingMessage = message;
+        _requestReload();
+    }
+
+    /// <summary>Daftarkan trainer hasil unduhan katalog sebagai alat game.</summary>
+    public void AddInstalledTrainer(string exePath, string name)
+    {
+        if (!Tools.Any(t => string.Equals(t.Path, exePath, StringComparison.OrdinalIgnoreCase)))
+        {
+            var tool = new ExternalTool { Kind = ExternalToolKind.Trainer, Name = name, Path = exePath };
+            _services.Library.AddTool(LibraryKey, tool);
+            _services.SaveLibrary();
+            Tools.Add(new ToolViewModel(_services, this, tool));
+            RaiseToolsChanged();
+        }
+        ToolsMessage = $"Trainer \"{name}\" siap. Aktifkan \"Jalankan otomatis\" agar terbuka setiap kali game dimulai.";
+    }
+
     private void RemoveImported()
     {
         _services.Library.ClearImported(Keys);
@@ -358,6 +388,7 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
     private async Task AttachAsync(int pid)
     {
         _attachedPid = pid;
+        OnPropertyChanged(nameof(RunningPid));
         Status = TrainerStatus.Connecting;
         StatusDetail = null;
 
@@ -375,7 +406,7 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
             Status = TrainerStatus.Connected;
             StatusDetail = Tools.Count > 0
                 ? $"PID {pid}. Gunakan trainer/tabel Anda di tab \"Trainer & Tabel\"."
-                : $"PID {pid}. Belum ada cheat — impor tabel Cheat Engine atau tambahkan trainer di tab \"Trainer & Tabel\".";
+                : $"PID {pid}. Belum ada cheat — pakai tab \"Pemindai Nilai\" untuk mencari uang/nyawa, atau tambahkan trainer.";
             return;
         }
 
@@ -453,6 +484,7 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
         if (s is not null) Task.Run(s.Dispose);
         Status = newStatus;
         StatusDetail = detail;
+        OnPropertyChanged(nameof(RunningPid));
     }
 
     private void Launch()
@@ -498,7 +530,11 @@ public sealed class GameViewModel : ViewModelBase, IDisposable
         try { return SteamLocator.FindGameDir(appId); } catch { return null; }
     }
 
-    public void Dispose() => Detach(TrainerStatus.NotRunning, null);
+    public void Dispose()
+    {
+        Scanner.Dispose();
+        Detach(TrainerStatus.NotRunning, null);
+    }
 
     private sealed class BlockedException(string message) : Exception(message);
 }

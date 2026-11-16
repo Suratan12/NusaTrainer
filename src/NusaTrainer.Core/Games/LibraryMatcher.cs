@@ -28,7 +28,7 @@ public static class LibraryMatcher
     {
         Id = game.Key,
         Name = game.Name,
-        Description = $"Terdeteksi dari {SourceLabel(game.Source)}. Belum ada cheat bawaan di database — impor tabel Cheat Engine atau tambahkan trainer di tab \"Trainer & Tabel\".",
+        Description = $"Terdeteksi dari {SourceLabel(game.Source)}. Belum ada cheat bawaan di database — cari uang/nyawa dengan Pemindai Nilai, impor tabel Cheat Engine, atau pakai trainer.",
         ProcessNames = game.Executables.Select(ProcessFinder.Normalize).ToList(),
         SteamAppId = game.Source == GameSource.Steam && int.TryParse(game.SourceId, out var id) ? id : null,
         EpicAppNames = game.Source == GameSource.Epic ? [game.SourceId] : null,

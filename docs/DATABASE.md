@@ -166,7 +166,28 @@ Untuk efek seperti "tidak menerima damage", ganti instruksi pengurang nyawa deng
 ]
 ```
 
-Aplikasi hanya membuka halaman tersebut di browser; pengguna mengunduh sendiri lalu menambahkannya lewat **Trainer & Tabel → Tambah trainer**. Database tidak boleh berisi tautan unduhan langsung ke file .exe pihak ketiga atau salinan trainer berbayar.
+Tanpa `downloadUrl`, aplikasi hanya membuka halaman resmi di browser.
+
+**Unduhan langsung terverifikasi** (tombol "Unduh & pasang", tanpa halaman iklan):
+
+```json
+{
+  "name": "Contoh RPG Trainer +20",
+  "author": "pembuat-trainer",
+  "homepage": "https://situs-resmi-pembuat/halaman-trainer",
+  "trainerVersion": "1.4",
+  "downloadUrl": "https://situs-resmi-pembuat/files/ContohRPG_Trainer_v1.4.zip",
+  "sha256": "<64 hex — nusa-db hash file.zip>",
+  "gameVersions": ["1.2.3"],
+  "steamBuildIds": ["14592033"]
+}
+```
+
+- `downloadUrl` harus HTTPS ke file **.zip atau .exe** (atau path relatif bila file di-host bersama database, mis. `trainers/x.zip`). Ambil URL file aslinya, bukan halaman perantara/iklan.
+- `sha256` wajib; file yang berbeda (diganti, rusak, disisipi malware) ditolak.
+- `gameVersions` dicocokkan dengan awalan versi exe game (Properties → Details di Windows); `steamBuildIds` dengan `buildid` di `steamapps/appmanifest_<appid>.acf`. Aplikasi menandai "Cocok", "Dibuat untuk versi lain", atau "Versi tidak terdeteksi".
+- Saat trainer diperbarui pembuatnya, perbarui `downloadUrl`/`sha256`/`gameVersions` lalu push — semua pengguna menerimanya lewat auto-update.
+- **Hormati pembuat trainer:** minta izin sebelum memasang tautan unduhan langsung (banyak pembuat hidup dari iklan di situs mereka), dan jangan pernah menautkan trainer berbayar.
 
 ### Mengubah tabel Cheat Engine menjadi entri database
 

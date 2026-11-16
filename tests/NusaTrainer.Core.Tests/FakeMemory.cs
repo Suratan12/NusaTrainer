@@ -11,6 +11,8 @@ public sealed class FakeMemory : IProcessMemory
     public bool Is64Bit { get; set; } = true;
     public bool HasExited { get; set; }
     public int WriteCount { get; private set; }
+    /// <summary>Ukuran module "game.exe" (default: seluruh memori). Sisanya dianggap heap.</summary>
+    public ulong? ModuleSize { get; set; }
 
     public FakeMemory(int size = 0x10000) => Data = new byte[size];
 
@@ -35,7 +37,7 @@ public sealed class FakeMemory : IProcessMemory
         new(Base + 0x1000, (ulong)Data.Length - 0x1000, true, true, false), // "data"
     ];
 
-    public IReadOnlyList<ModuleInfo> GetModules() => [new("game.exe", Base, (ulong)Data.Length, null)];
+    public IReadOnlyList<ModuleInfo> GetModules() => [new("game.exe", Base, ModuleSize ?? (ulong)Data.Length, null)];
 
     public void Put(int offset, ReadOnlySpan<byte> bytes) => bytes.CopyTo(Data.AsSpan(offset));
     public void PutInt(int offset, int v) => BitConverter.GetBytes(v).CopyTo(Data, offset);

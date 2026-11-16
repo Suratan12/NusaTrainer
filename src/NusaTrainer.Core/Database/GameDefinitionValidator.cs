@@ -64,6 +64,17 @@ public static partial class GameDefinitionValidator
             if (string.IsNullOrWhiteSpace(t.Name)) errors.Add("externalTrainers: name kosong.");
             if (!Uri.TryCreate(t.Homepage, UriKind.Absolute, out var hp) || hp.Scheme != Uri.UriSchemeHttps)
                 errors.Add($"externalTrainers '{t.Name}': homepage harus HTTPS.");
+            if (t.DownloadUrl is { } du)
+            {
+                bool ok = Uri.TryCreate(du, UriKind.Absolute, out var u)
+                    ? u.Scheme == Uri.UriSchemeHttps
+                    : !du.StartsWith('/') && !du.Split('/').Contains("..") && !du.Contains('\\');
+                if (!ok) errors.Add($"externalTrainers '{t.Name}': downloadUrl harus HTTPS (atau path relatif tanpa '..').");
+                if (t.Sha256 is null || !Sha256Regex().IsMatch(t.Sha256))
+                    errors.Add($"externalTrainers '{t.Name}': sha256 wajib bila downloadUrl diisi.");
+                var ext = Path.GetExtension(new Uri(new Uri("https://x/"), du).AbsolutePath).ToLowerInvariant();
+                if (ext is not (".zip" or ".exe")) errors.Add($"externalTrainers '{t.Name}': downloadUrl harus file .zip atau .exe.");
+            }
         }
 
         var modIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

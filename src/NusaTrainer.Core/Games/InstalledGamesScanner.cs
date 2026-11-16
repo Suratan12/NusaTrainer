@@ -15,6 +15,20 @@ public sealed record InstalledGame(
     IReadOnlyList<string> Executables,
     bool HasAntiCheat)
 {
+    /// <summary>Versi file exe utama (Windows), mis. "1.5.78.11833".</summary>
+    public string? Version { get; init; }
+    /// <summary>Build ID Steam dari appmanifest.</summary>
+    public string? BuildId { get; init; }
+
+    public string? VersionText =>
+        (Version, BuildId) switch
+        {
+            (not null, not null) => $"{Version} (build {BuildId})",
+            (not null, null) => Version,
+            (null, not null) => $"build {BuildId}",
+            _ => null,
+        };
+
     /// <summary>Kunci stabil, mis. "steam-292030", "epic-fn", "gog-1207658924", "manual-1a2b3c4d".</summary>
     public string Key => MakeKey(Source, SourceId);
 
@@ -29,7 +43,7 @@ public sealed record InstalledGame(
 /// <summary>Memindai launcher yang umum dipakai (Steam, Epic Games, GOG) untuk menemukan game terpasang.</summary>
 public static partial class InstalledGamesScanner
 {
-    [GeneratedRegex("\"(?<k>appid|name|installdir)\"\\s+\"(?<v>[^\"]*)\"", RegexOptions.IgnoreCase)]
+    [GeneratedRegex("\"(?<k>appid|name|installdir|buildid)\"\\s+\"(?<v>[^\"]*)\"", RegexOptions.IgnoreCase)]
     private static partial Regex AcfField();
 
     // Bukan game: runtime, redistributable, alat.
@@ -88,7 +102,7 @@ public static partial class InstalledGamesScanner
 
                 var dir = Path.Combine(apps, "common", dirName);
                 if (!Directory.Exists(dir)) continue;
-                result.Add(Create(GameSource.Steam, appId, name, dir, null));
+                result.Add(Create(GameSource.Steam, appId, name, dir, null) with { BuildId = fields.GetValueOrDefault("buildid") });
             }
         }
         return result;
@@ -153,7 +167,10 @@ public static partial class InstalledGamesScanner
         var id = Hashing.Sha256Hex(System.Text.Encoding.UTF8.GetBytes(Path.GetFullPath(exePath).ToLowerInvariant()))[..10];
         var exes = new List<string> { Path.GetFileName(exePath) };
         exes.AddRange(FindExecutables(dir).Where(e => !string.Equals(e, exes[0], StringComparison.OrdinalIgnoreCase)));
-        return new InstalledGame(GameSource.Manual, id, name ?? Path.GetFileNameWithoutExtension(exePath), dir, exes, DetectAntiCheat(dir));
+        return new InstalledGame(GameSource.Manual, id, name ?? Path.GetFileNameWithoutExtension(exePath), dir, exes, DetectAntiCheat(dir))
+        {
+            Version = ReadExeVersion(dir, exes),
+        };
     }
 
     private static InstalledGame Create(GameSource source, string id, string name, string dir, string? preferredExe)
@@ -165,7 +182,23 @@ public static partial class InstalledGamesScanner
             exes.RemoveAll(e => string.Equals(e, pe, StringComparison.OrdinalIgnoreCase));
             exes.Insert(0, pe);
         }
-        return new InstalledGame(source, id, name, dir, exes, DetectAntiCheat(dir));
+        return new InstalledGame(source, id, name, dir, exes, DetectAntiCheat(dir)) { Version = ReadExeVersion(dir, exes) };
+    }
+
+    /// <summary>Versi produk/file dari exe utama (hanya berisi data di Windows).</summary>
+    public static string? ReadExeVersion(string dir, IReadOnlyList<string> exes)
+    {
+        if (exes.Count == 0) return null;
+        try
+        {
+            var path = Directory.EnumerateFiles(dir, exes[0], new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 3 })
+                .FirstOrDefault();
+            if (path is null) return null;
+            var info = System.Diagnostics.FileVersionInfo.GetVersionInfo(path);
+            var v = (info.ProductVersion ?? info.FileVersion)?.Trim();
+            return string.IsNullOrEmpty(v) || v is "1.0.0.0" or "0.0.0.0" ? null : v.Replace(", ", ".");
+        }
+        catch { return null; }
     }
 
     /// <summary>Daftar nama file .exe game (tanpa helper/installer), maksimal kedalaman 3 folder.</summary>

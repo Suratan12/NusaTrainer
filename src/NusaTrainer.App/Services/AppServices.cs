@@ -23,6 +23,7 @@ public sealed class AppServices : IDisposable
     public AppUpdater AppUpdater { get; }
     public IHotkeyService Hotkeys { get; }
     public UserLibrary Library { get; }
+    public TrainerInstaller Trainers { get; }
 
     /// <summary>Diisi oleh jendela utama: membuka dialog pemilihan folder.</summary>
     public Func<string, Task<string?>> PickFolderAsync { get; set; } = _ => Task.FromResult<string?>(null);
@@ -41,6 +42,7 @@ public sealed class AppServices : IDisposable
         AppUpdater = new AppUpdater(Http);
         Hotkeys = OperatingSystem.IsWindows() ? new WindowsHotkeyService() : new NullHotkeyService();
         Library = UserLibrary.Load();
+        Trainers = new TrainerInstaller(Http, Path.Combine(AppPaths.DataRoot, "trainers"));
     }
 
     public void SaveLibrary()
