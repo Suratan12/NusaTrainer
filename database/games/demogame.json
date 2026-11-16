@@ -1,0 +1,88 @@
+{
+  "id": "demogame",
+  "name": "Demo Game (Uji Coba)",
+  "revision": 1,
+  "description": "Game uji coba yang ikut di repo (tools/DemoGame). Jalankan dengan 'dotnet run --project tools/DemoGame' untuk mencoba semua jenis cheat dan pemasangan mod tanpa menyentuh game sungguhan.",
+  "author": "NusaTrainer",
+  "supportedGameVersion": "1.0",
+  "processNames": ["DemoGame"],
+  "accentColor": "#14B8A6",
+  "cheats": [
+    {
+      "id": "inf-health",
+      "name": "Nyawa Tak Terbatas",
+      "category": "Pemain",
+      "description": "Mengunci nyawa di 100.",
+      "type": "toggle",
+      "hotkey": "Num1",
+      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 16 },
+      "valueType": "int32",
+      "operation": "freeze",
+      "value": 100
+    },
+    {
+      "id": "inf-ammo",
+      "name": "Amunisi Tak Terbatas",
+      "category": "Senjata",
+      "description": "Magazin tidak pernah habis.",
+      "type": "toggle",
+      "hotkey": "Num2",
+      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 20 },
+      "valueType": "int32",
+      "operation": "freeze",
+      "value": 30
+    },
+    {
+      "id": "add-gold",
+      "name": "Tambah 1.000 Emas",
+      "category": "Inventaris",
+      "type": "button",
+      "hotkey": "Num3",
+      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 24 },
+      "valueType": "int32",
+      "operation": "add",
+      "value": 1000
+    },
+    {
+      "id": "set-gold",
+      "name": "Atur Jumlah Emas",
+      "category": "Inventaris",
+      "type": "slider",
+      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 24 },
+      "valueType": "int32",
+      "operation": "set",
+      "min": 0,
+      "max": 100000,
+      "step": 500,
+      "default": 5000
+    },
+    {
+      "id": "game-speed",
+      "name": "Kecepatan Pemain",
+      "category": "Pemain",
+      "description": "Aktifkan kunci, lalu geser untuk mengatur kecepatan.",
+      "type": "slider",
+      "hotkeyIncrease": "Num6",
+      "hotkeyDecrease": "Num4",
+      "address": { "pattern": "4E 55 53 41 2D 44 45 4D 4F 2D 47 41 4D 45 21 21", "region": "data", "patternOffset": 28 },
+      "valueType": "float",
+      "operation": "freeze",
+      "min": 0.5,
+      "max": 5,
+      "step": 0.5,
+      "default": 2
+    }
+  ],
+  "mods": [
+    {
+      "id": "hello-mod",
+      "name": "Mod Halo (Contoh)",
+      "description": "Menambahkan file mods/hello-nusa.txt yang dibaca DemoGame saat start. Contoh alur pasang/copot mod beserta pencadangan file.",
+      "author": "NusaTrainer",
+      "version": "1.0",
+      "downloadUrl": "mods/demogame-hello-mod.zip",
+      "sha256": "f6797c3b427fcb610caba2a3a46e5668dc5490d2b25c6b0d4f8dd2a2d49a55bb",
+      "installPath": ""
+    }
+  ]
+}

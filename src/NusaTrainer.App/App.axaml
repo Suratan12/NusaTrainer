@@ -1,0 +1,81 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NusaTrainer.App.App"
+             RequestedThemeVariant="Dark">
+  <Application.Resources>
+    <SolidColorBrush x:Key="BgBrush" Color="#0E1015"/>
+    <SolidColorBrush x:Key="SidebarBrush" Color="#13161D"/>
+    <SolidColorBrush x:Key="CardBrush" Color="#181C25"/>
+    <SolidColorBrush x:Key="CardHoverBrush" Color="#1E2330"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#232937"/>
+    <SolidColorBrush x:Key="MutedBrush" Color="#8B93A7"/>
+    <SolidColorBrush x:Key="DimBrush" Color="#5D667A"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#14B8A6"/>
+    <LinearGradientBrush x:Key="BrandGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Offset="0" Color="#14B8A6"/>
+      <GradientStop Offset="1" Color="#7C3AED"/>
+    </LinearGradientBrush>
+    <!-- Warna aksen Fluent (ToggleSwitch, Slider, tombol accent) -->
+    <Color x:Key="SystemAccentColor">#14B8A6</Color>
+    <Color x:Key="SystemAccentColorLight1">#2DD4BF</Color>
+    <Color x:Key="SystemAccentColorLight2">#5EEAD4</Color>
+    <Color x:Key="SystemAccentColorDark1">#0D9488</Color>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{StaticResource CardBrush}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+    <Style Selector="Border.card:pointerover">
+      <Setter Property="Background" Value="{StaticResource CardHoverBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+      <Setter Property="FontSize" Value="12"/>
+    </Style>
+    <Style Selector="TextBlock.section">
+      <Setter Property="Foreground" Value="{StaticResource DimBrush}"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="LetterSpacing" Value="1"/>
+    </Style>
+    <Style Selector="Border.kbd">
+      <Setter Property="Background" Value="#232937"/>
+      <Setter Property="BorderBrush" Value="#2E3546"/>
+      <Setter Property="BorderThickness" Value="1,1,1,2"/>
+      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="Padding" Value="7,2"/>
+    </Style>
+    <Style Selector="Border.kbd > TextBlock">
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#C9CFDD"/>
+    </Style>
+    <Style Selector="Border.pill">
+      <Setter Property="CornerRadius" Value="999"/>
+      <Setter Property="Padding" Value="10,4"/>
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="ListBox.games > ListBoxItem">
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Padding" Value="10,8"/>
+      <Setter Property="Margin" Value="0,1"/>
+    </Style>
+    <Style Selector="ListBox.games > ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1F2533"/>
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="MinHeight" Value="40"/>
+    </Style>
+  </Application.Styles>
+</Application>

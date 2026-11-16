@@ -1,0 +1,11 @@
+bin/
+obj/
+publish/
+artifacts/
+*.user
+.vs/
+.idea/
+# Kunci privat tanda tangan database — JANGAN di-commit
+keys/
+*.pem
+!**/public.pem

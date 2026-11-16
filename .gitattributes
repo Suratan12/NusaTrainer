@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.cs text eol=lf
+# Database harus byte-identik dengan hash di index.json — jangan ubah line ending.
+database/** -text
+*.zip binary
+*.png binary
+*.ico binary

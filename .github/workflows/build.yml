@@ -1,0 +1,84 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validasi database
+        run: dotnet run --project tools/DbTool -- validate --db database
+
+      - name: Test (termasuk uji integrasi dengan DemoGame)
+        run: |
+          dotnet build tools/DemoGame
+          dotnet test tests/NusaTrainer.Core.Tests
+
+      - name: Tentukan versi
+        id: ver
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF#refs/tags/v}"; else v="1.0.0"; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Publish win-x64
+        run: >
+          dotnet publish src/NusaTrainer.App -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.ver.outputs.version }} -o publish/NusaTrainer
+
+      - name: Publish DemoGame (untuk mencoba trainer)
+        run: dotnet publish tools/DemoGame -c Release -r win-x64 --self-contained false -o publish/NusaTrainer/DemoGame
+
+      - name: Zip
+        id: zip
+        shell: pwsh
+        run: |
+          $name = "NusaTrainer-${{ steps.ver.outputs.version }}-win-x64.zip"
+          Compress-Archive -Path publish/NusaTrainer/* -DestinationPath $name
+          $hash = (Get-FileHash $name -Algorithm SHA256).Hash.ToLower()
+          "name=$name" >> $env:GITHUB_OUTPUT
+          "sha256=$hash" >> $env:GITHUB_OUTPUT
+          Write-Host "SHA-256: $hash"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NusaTrainer-win-x64
+          path: ${{ steps.zip.outputs.name }}
+
+      - name: Buat GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${{ steps.zip.outputs.name }}"
+          cat > release-notes.md <<NOTES
+          SHA-256: \`${{ steps.zip.outputs.sha256 }}\`
+
+          Agar aplikasi yang sudah terpasang menawarkan pembaruan otomatis, salin ini ke \`database/app-release.json\` lalu push ke main:
+
+          \`\`\`json
+          {
+            "version": "${{ steps.ver.outputs.version }}",
+            "downloadUrl": "${url}",
+            "sha256": "${{ steps.zip.outputs.sha256 }}",
+            "notes": "Ringkasan perubahan di sini."
+          }
+          \`\`\`
+          NOTES
+          gh release create "$GITHUB_REF_NAME" "${{ steps.zip.outputs.name }}" --title "NusaTrainer ${{ steps.ver.outputs.version }}" --notes-file release-notes.md

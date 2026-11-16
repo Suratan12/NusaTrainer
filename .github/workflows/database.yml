@@ -1,0 +1,62 @@
+name: Publish Database
+
+# Setiap perubahan di folder database/ ditandatangani dan dipublikasikan ke GitHub Pages.
+# Aplikasi NusaTrainer mengambilnya otomatis (saat dibuka + berkala).
+#
+# Persiapan sekali saja:
+#   1. dotnet run --project tools/DbTool -- keygen --out keys
+#   2. Settings → Secrets and variables → Actions → New secret:
+#        NUSA_DB_PRIVATE_KEY = isi keys/private.pem
+#   3. Settings → Pages → Source: GitHub Actions
+#   4. Isi publicKeyPem & databaseUrl di src/NusaTrainer.App/appsettings.json
+
+on:
+  push:
+    branches: [main]
+    paths: ['database/**', 'tools/DbTool/**', 'src/NusaTrainer.Core/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Pastikan kunci tanda tangan ada
+        env:
+          NUSA_DB_PRIVATE_KEY: ${{ secrets.NUSA_DB_PRIVATE_KEY }}
+        run: |
+          if [ -z "$NUSA_DB_PRIVATE_KEY" ]; then
+            echo "::error::Secret NUSA_DB_PRIVATE_KEY belum diatur. Lihat docs/DATABASE.md."
+            exit 1
+          fi
+
+      - name: Validasi, hitung hash, dan tandatangani
+        env:
+          NUSA_DB_PRIVATE_KEY: ${{ secrets.NUSA_DB_PRIVATE_KEY }}
+        run: dotnet run --project tools/DbTool -- build --db database --out site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{79E5D6B2-3C71-41AF-84B3-456FA14EB876}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NusaTrainer.Core", "src\NusaTrainer.Core\NusaTrainer.Core.csproj", "{D0B852B7-E172-4A9C-8990-B4E3995601DF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7B5B5A9A-028F-4CC1-BCDD-63F273E33E1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbTool", "tools\DbTool\DbTool.csproj", "{10D53F4D-8B80-4D1C-96F9-89C9BB1F73D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoGame", "tools\DemoGame\DemoGame.csproj", "{75FB4EDE-5044-4E83-A511-B40C8D967A3C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1624B9E1-4297-4A46-8FD3-51059E7F98A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NusaTrainer.Core.Tests", "tests\NusaTrainer.Core.Tests\NusaTrainer.Core.Tests.csproj", "{6C1099F8-3F75-436F-905C-3657DC2C8C3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NusaTrainer.App", "src\NusaTrainer.App\NusaTrainer.App.csproj", "{A54F07CD-565B-4E91-8BA7-6B2E6CC2666E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0B852B7-E172-4A9C-8990-B4E3995601DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0B852B7-E172-4A9C-8990-B4E3995601DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0B852B7-E172-4A9C-8990-B4E3995601DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0B852B7-E172-4A9C-8990-B4E3995601DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10D53F4D-8B80-4D1C-96F9-89C9BB1F73D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10D53F4D-8B80-4D1C-96F9-89C9BB1F73D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10D53F4D-8B80-4D1C-96F9-89C9BB1F73D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10D53F4D-8B80-4D1C-96F9-89C9BB1F73D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75FB4EDE-5044-4E83-A511-B40C8D967A3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75FB4EDE-5044-4E83-A511-B40C8D967A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75FB4EDE-5044-4E83-A511-B40C8D967A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75FB4EDE-5044-4E83-A511-B40C8D967A3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C1099F8-3F75-436F-905C-3657DC2C8C3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C1099F8-3F75-436F-905C-3657DC2C8C3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C1099F8-3F75-436F-905C-3657DC2C8C3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C1099F8-3F75-436F-905C-3657DC2C8C3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A54F07CD-565B-4E91-8BA7-6B2E6CC2666E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A54F07CD-565B-4E91-8BA7-6B2E6CC2666E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A54F07CD-565B-4E91-8BA7-6B2E6CC2666E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A54F07CD-565B-4E91-8BA7-6B2E6CC2666E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D0B852B7-E172-4A9C-8990-B4E3995601DF} = {79E5D6B2-3C71-41AF-84B3-456FA14EB876}
+		{10D53F4D-8B80-4D1C-96F9-89C9BB1F73D3} = {7B5B5A9A-028F-4CC1-BCDD-63F273E33E1E}
+		{75FB4EDE-5044-4E83-A511-B40C8D967A3C} = {7B5B5A9A-028F-4CC1-BCDD-63F273E33E1E}
+		{6C1099F8-3F75-436F-905C-3657DC2C8C3E} = {1624B9E1-4297-4A46-8FD3-51059E7F98A4}
+		{A54F07CD-565B-4E91-8BA7-6B2E6CC2666E} = {79E5D6B2-3C71-41AF-84B3-456FA14EB876}
+	EndGlobalSection
+EndGlobal

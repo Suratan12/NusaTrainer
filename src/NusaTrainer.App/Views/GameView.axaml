@@ -1,0 +1,167 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NusaTrainer.App.ViewModels"
+             x:Class="NusaTrainer.App.Views.GameView"
+             x:DataType="vm:GameViewModel">
+  <DockPanel>
+    <!-- Header game -->
+    <Border DockPanel.Dock="Top" Background="{Binding HeaderBrush}" Padding="36,32,36,22">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="10">
+          <TextBlock Text="{Binding Name}" FontSize="30" FontWeight="Bold" TextWrapping="Wrap"/>
+          <TextBlock Text="{Binding Description}" Foreground="#C9CFDD" TextWrapping="Wrap" MaxWidth="760" HorizontalAlignment="Left"/>
+          <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+            <Border Classes="pill" Background="#99000000">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="9" Height="9" Fill="{Binding StatusBrush}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" FontSize="12"/>
+              </StackPanel>
+            </Border>
+            <Border Classes="pill" Background="#66000000" IsVisible="{Binding HasSupportedVersion}">
+              <TextBlock Text="{Binding SupportedVersion}" FontSize="12" Foreground="#C9CFDD"/>
+            </Border>
+          </StackPanel>
+          <TextBlock Text="{Binding StatusDetail}" IsVisible="{Binding HasStatusDetail}" Foreground="#C9CFDD" FontSize="12" TextWrapping="Wrap" MaxWidth="760" HorizontalAlignment="Left"/>
+        </StackPanel>
+        <Button Grid.Column="1" Classes="accent" VerticalAlignment="Top" Padding="22,10" FontWeight="SemiBold"
+                IsVisible="{Binding CanLaunch}" Command="{Binding LaunchCommand}" Content="▶  Mainkan"/>
+      </Grid>
+    </Border>
+
+    <TabControl Margin="24,6,24,0" Padding="0">
+      <!-- ========== Cheat ========== -->
+      <TabItem Header="{Binding CheatTabHeader}">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding Cheats}" Margin="12,8,16,24">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CheatViewModel">
+                <StackPanel>
+                  <TextBlock Text="{Binding Category}" Classes="section" IsVisible="{Binding ShowCategoryHeader}" Margin="2,14,0,8"/>
+                  <Border Classes="card" Padding="18,12" Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="*,Auto,330">
+                      <StackPanel VerticalAlignment="Center" Spacing="3">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+                        <TextBlock Text="{Binding Description}" Classes="muted" IsVisible="{Binding HasDescription}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding ErrorText}" Foreground="#F87171" FontSize="12" IsVisible="{Binding HasError}" TextWrapping="Wrap"/>
+                      </StackPanel>
+                      <ItemsControl Grid.Column="1" ItemsSource="{Binding Hotkeys}" VerticalAlignment="Center" Margin="12,0">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="x:String">
+                            <Border Classes="kbd"><TextBlock Text="{Binding}"/></Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <Panel Grid.Column="2" VerticalAlignment="Center">
+                        <ToggleSwitch IsVisible="{Binding IsToggle}" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding CanInteract}"
+                                      OnContent="" OffContent="" HorizontalAlignment="Right" MinWidth="0"/>
+                        <Button IsVisible="{Binding IsButton}" Command="{Binding PressCommand}" Classes="accent"
+                                Content="Terapkan" HorizontalAlignment="Right" Padding="18,6"/>
+                        <Grid IsVisible="{Binding IsSlider}" ColumnDefinitions="*,70,Auto">
+                          <Slider Minimum="{Binding Min}" Maximum="{Binding Max}" Value="{Binding SliderValue}"
+                                  SmallChange="{Binding Step}" LargeChange="{Binding Step}" IsEnabled="{Binding CanInteract}"
+                                  VerticalAlignment="Center"/>
+                          <TextBlock Grid.Column="1" Text="{Binding SliderValueText}" FontWeight="SemiBold"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                          <ToggleSwitch Grid.Column="2" IsVisible="{Binding IsLockable}" IsChecked="{Binding IsEnabled}"
+                                        IsEnabled="{Binding CanInteract}" OnContent="" OffContent="" MinWidth="0"
+                                        ToolTip.Tip="Kunci nilai"/>
+                        </Grid>
+                      </Panel>
+                    </Grid>
+                  </Border>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- ========== Mod ========== -->
+      <TabItem Header="{Binding ModTabHeader}">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="12,8,16,10">
+            <Border Classes="card" Padding="18,14">
+              <Grid ColumnDefinitions="*,Auto,Auto">
+                <StackPanel Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="Folder instalasi game" FontWeight="SemiBold"/>
+                  <TextBlock Text="{Binding GameFolderText}" Classes="muted" TextWrapping="Wrap"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Buka" Command="{Binding OpenFolderCommand}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Content="Pilih folder…" Command="{Binding PickFolderCommand}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+              </Grid>
+            </Border>
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Tutup game sebelum memasang atau mencopot mod. File asli game otomatis dicadangkan dan dikembalikan saat mod dicopot."/>
+            <TextBlock Text="Belum ada mod untuk game ini." Classes="muted" IsVisible="{Binding HasNoMods}" Margin="0,10"/>
+          </StackPanel>
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Mods}" Margin="12,0,16,24">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><StackPanel Spacing="8"/></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ModViewModel">
+                  <Border Classes="card" Padding="18,14">
+                    <DockPanel>
+                      <ProgressBar DockPanel.Dock="Bottom" Value="{Binding Progress}" Maximum="100" Margin="0,10,0,0"
+                                   MinWidth="0" IsVisible="{Binding IsWorking}"/>
+                      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" Margin="16,0,0,0">
+                        <Button Content="Copot" Command="{Binding UninstallCommand}" IsVisible="{Binding IsInstalled}"/>
+                        <Button Classes="accent" Content="{Binding InstallLabel}" Command="{Binding InstallCommand}"/>
+                      </StackPanel>
+                      <StackPanel Spacing="4">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="15"/>
+                          <Border Classes="pill" Background="#14532D" IsVisible="{Binding IsInstalled}" Padding="8,1">
+                            <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="#86EFAC"/>
+                          </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Meta}" Classes="muted" FontSize="11"/>
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#C9CFDD"/>
+                        <TextBlock IsVisible="{Binding HasRequirements}" Foreground="#FBBF24" FontSize="12" TextWrapping="Wrap">
+                          <Run Text="Prasyarat: "/><Run Text="{Binding Requirements}"/>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Message}" IsVisible="{Binding HasMessage}" FontSize="12" Foreground="#93C5FD" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+
+      <!-- ========== Info ========== -->
+      <TabItem Header="Info">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="10" MaxWidth="820" HorizontalAlignment="Left" Margin="12,8,16,24">
+            <Border Classes="card" Padding="20,16">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Cara memakai" FontWeight="SemiBold" FontSize="15"/>
+                <TextBlock TextWrapping="Wrap" Text="1. Jalankan game seperti biasa (mode single-player / offline)."/>
+                <TextBlock TextWrapping="Wrap" Text="2. NusaTrainer mendeteksi game dan terhubung otomatis (status hijau)."/>
+                <TextBlock TextWrapping="Wrap" Text="3. Masuk ke dalam permainan (bukan menu utama), lalu aktifkan cheat lewat tombol di sini atau hotkey."/>
+                <TextBlock TextWrapping="Wrap" Text="4. Simpan game Anda sebelum memakai cheat, untuk berjaga-jaga."/>
+              </StackPanel>
+            </Border>
+            <Border Classes="card" Padding="20,16">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Detail" FontWeight="SemiBold" FontSize="15"/>
+                <TextBlock Classes="muted"><Run Text="Proses: "/><Run Text="{Binding ProcessNamesText}"/></TextBlock>
+                <TextBlock Classes="muted" Text="{Binding SupportedVersion}" IsVisible="{Binding HasSupportedVersion}"/>
+                <TextBlock Classes="muted" Text="{Binding AuthorText}"/>
+              </StackPanel>
+            </Border>
+            <Border Classes="card" Padding="20,16" BorderBrush="#7F1D1D">
+              <TextBlock TextWrapping="Wrap" Foreground="#FCA5A5"
+                         Text="NusaTrainer hanya untuk permainan single-player. Aplikasi menolak terhubung ke game online atau game yang memuat anti-cheat — memakai cheat di sana merugikan pemain lain dan bisa membuat akun Anda di-ban."/>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</UserControl>
